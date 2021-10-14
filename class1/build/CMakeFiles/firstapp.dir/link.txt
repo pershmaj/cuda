@@ -1,0 +1,1 @@
+/usr/bin/g++  CMakeFiles/firstapp.dir/main.cu.o -o firstapp  -L"/usr/local/cuda/targets/x86_64-linux/lib/stubs" -L"/usr/local/cuda/targets/x86_64-linux/lib" -lcudadevrt -lcudart_static -lrt -lpthread -ldl
