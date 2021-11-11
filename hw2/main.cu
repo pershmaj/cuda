@@ -15,7 +15,7 @@
 
 using namespace std;
 
-#define VECT_SIZE (10u)
+#define VECT_SIZE (1024u)
 #define BLOC_SIZE (128u)
 
 __global__ void sumVector(int *data1, int *data2, int *data3) {
@@ -25,33 +25,28 @@ __global__ void sumVector(int *data1, int *data2, int *data3) {
     }
 
 }
+__global__ void fillVector(int *data) {
+    int i = threadIdx.x + blockIdx.x * blockDim.x;
+    if(i < VECT_SIZE) {
+        data[i] = i+1;
+    }
+
+}
 
 int main(){
-    int h_matrix1[VECT_SIZE][VECT_SIZE];
-    int h_matrix2[VECT_SIZE][VECT_SIZE];
-    int **d_data1 = NULL;
-    int **d_data2 = NULL;
-    int **d_data3 = NULL;
-
+    int *h_data = (int*) malloc(VECT_SIZE * sizeof(int));
+    int *d_data1 = NULL;
+    int *d_data2 = NULL;
+    int *d_data3 = NULL;
 
     CUDA_CHECK_RETURN(cudaMalloc(&d_data1, VECT_SIZE * sizeof(int)));
     CUDA_CHECK_RETURN(cudaMalloc(&d_data2, VECT_SIZE * sizeof(int)));
     CUDA_CHECK_RETURN(cudaMalloc(&d_data3, VECT_SIZE * sizeof(int)));
     //kernel config
 
-     for(int i = 0; i < VECT_SIZE; i++) {
-        CUDA_CHECK_RETURN(cudaMalloc(&d_data1[i], VECT_SIZE * sizeof(int)));
-        CUDA_CHECK_RETURN(cudaMalloc(&d_data2[i], VECT_SIZE * sizeof(int)));
-        CUDA_CHECK_RETURN(cudaMalloc(&d_data3[i], VECT_SIZE * sizeof(int)));
-    }
-
-    for(int i = 0; i < VECT_SIZE * VECT_SIZE; i++) {
-        *h_matrix1[i] = 2;
-        *h_matrix2[i] = 2;
-    }
-
     int blockSize = BLOC_SIZE;
     int gridSize = (VECT_SIZE + BLOC_SIZE - 1) / BLOC_SIZE;
+
     
     //kernel execution
     fillVector<<<gridSize, blockSize>>>(d_data1);
@@ -67,8 +62,8 @@ int main(){
     // copy data (works both ways)
     CUDA_CHECK_RETURN(cudaMemcpy(h_data, d_data3, VECT_SIZE * sizeof(int), cudaMemcpyDeviceToHost));
 
-    for(int i = 0; i < VECT_SIZE * VECT_SIZE; i++) {
-        cout << h_matrix1[i];
+    for(int i = 0; i < VECT_SIZE; i++) {
+        cout << h_data[i];
         if( i < VECT_SIZE) {
             cout << ", ";
         }
