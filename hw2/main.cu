@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
-
+#include <chrono>
 #include "/usr/local/cuda/include/cuda_runtime.h"
 
 #define CUDA_CHECK_RETURN( value ) {                            \
@@ -15,8 +15,15 @@
 
 using namespace std;
 
-#define VECT_SIZE (2u)
-#define BLOCK_SIZE (2u)
+#define VECT_SIZE (20u)
+#define BLOCK_SIZE (20u)
+
+// 2u -> 142ns
+// 200u -> 169ns
+// 2000u -> 161ns
+// 200000u -> 94ns
+// 20000000u -> 90ns
+// 2000000000u -> 91ns
 
 __global__ void multiplyMatrixes(int *data1, int *data2, int *data3) {
     int row = threadIdx.x + blockIdx.x * blockDim.x;
@@ -31,7 +38,7 @@ __global__ void multiplyMatrixes(int *data1, int *data2, int *data3) {
 }
 
 int main(){
-    const int MatrixSize = VECT_SIZE * VECT_SIZE * sizeof(int);
+    const long MatrixSize = VECT_SIZE * VECT_SIZE * sizeof(int);
 
     int *h_data1 = (int*) malloc(MatrixSize);
     int *h_data2 = (int*) malloc(MatrixSize);
@@ -52,26 +59,27 @@ int main(){
     CUDA_CHECK_RETURN( cudaMemcpy( d_data1, h_data1, MatrixSize, cudaMemcpyHostToDevice ) );
     CUDA_CHECK_RETURN( cudaMemcpy( d_data2, h_data2, MatrixSize, cudaMemcpyHostToDevice ) );
 
-    // dim2 blockSize( BLOCK_SIZE, BLOCK_SIZE );
-	// dim2 gridSize( (VECT_SIZE + BLOCK_SIZE - 1) / BLOCK_SIZE,
-	// 			   (VECT_SIZE + BLOCK_SIZE - 1) / BLOCK_SIZE );
-    // int blockSize = BLOCK_SIZE;
-    // int gridSize = (VECT_SIZE + BLOCK_SIZE - 1) / BLOCK_SIZE;
-
     dim3 gridSize(ceilf(VECT_SIZE/(float)BLOCK_SIZE), ceilf(VECT_SIZE/(float)BLOCK_SIZE), 1);
     dim3 blockSize(BLOCK_SIZE, BLOCK_SIZE, 1);
     
+
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
     //kernel execution
     multiplyMatrixes<<<gridSize, blockSize>>>(d_data1, d_data2, d_data3);
     //await for kernel computation
     CUDA_CHECK_RETURN(cudaDeviceSynchronize());
+
+    std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "[µs]" << std::endl;
+    std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::nanoseconds> (end - begin).count() << "[ns]" << std::endl;
     // copy data (works both ways)
     CUDA_CHECK_RETURN(cudaMemcpy(h_data3, d_data3, MatrixSize, cudaMemcpyDeviceToHost));
 
-    for(int i = 0; i < VECT_SIZE * VECT_SIZE; i++) {
-        cout << h_data3[i];
-        cout << ", ";
-    }
+    // for(int i = 0; i < VECT_SIZE * VECT_SIZE; i++) {
+    //     cout << h_data3[i];
+    //     cout << "\t";
+    //     if(i % VECT_SIZE - 1 == 0) cout << endl;
+    // }
 
     free(h_data1);
     free(h_data2);

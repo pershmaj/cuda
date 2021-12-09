@@ -6,7 +6,7 @@
 
 #IncludeRegexTransform: 
 
-/root/projects/hw2/main.cu
+/root/projects/hw3/main.cu
 stdio.h
 -
 stdlib.h
