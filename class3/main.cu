@@ -53,12 +53,6 @@ int main(){
     int blockSize = BLOC_SIZE;
     int gridSize = (VECT_SIZE + BLOC_SIZE - 1) / BLOC_SIZE;
     
-    //kernel execution
-    fillVector<<<gridSize, blockSize>>>(d_data1);
-    //await for kernel computation
-    CUDA_CHECK_RETURN(cudaDeviceSynchronize());//kernel execution
-    fillVector<<<gridSize, blockSize>>>(d_data2);
-    //await for kernel computation
     CUDA_CHECK_RETURN(cudaDeviceSynchronize());
     //kernel execution
     sumVector<<<gridSize, blockSize>>>(d_data1, d_data2, d_data3);
@@ -74,7 +68,6 @@ int main(){
         }
     }
 
-    free(h_data);
     CUDA_CHECK_RETURN(cudaFree(d_data1));
     CUDA_CHECK_RETURN(cudaFree(d_data2));
     CUDA_CHECK_RETURN(cudaFree(d_data3));
