@@ -15,14 +15,14 @@
 
 using namespace std;
 
-#define VECT_SIZE (32u)
+#define VECT_SIZE (1048576u)
 #define BLOCK_SIZE (16u)
 
-// 512u -> 135ns
-// 1048576u -> 79ns
+// 32u -> 25 763ns
+// 512u -> 278 967ns
+// 1048576u -> 5369ns
 // 134217728u -> 83ns
 // 1073741824u -> 140ns
-// 1407374883553u -> 84ns
 
 
 __global__ void multiplyMatrixes(int *A, int *B, int *C) {
@@ -93,26 +93,25 @@ int main(){
     dim3 blockSize(BLOCK_SIZE, BLOCK_SIZE, 1);
     
 
-    // std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     
     //kernel execution
     multiplyMatrixes<<<gridSize, blockSize>>>(d_data1, d_data2, d_data3);
     //await for kernel computation
     CUDA_CHECK_RETURN(cudaDeviceSynchronize());
 
-    // std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 
-    // std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "[µs]" << std::endl;
-    // std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::nanoseconds> (end - begin).count() << "[ns]" << std::endl;
+    std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "[µs]" << std::endl;
+    std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::nanoseconds> (end - begin).count() << "[ns]" << std::endl;
     // copy data (works both ways)
     CUDA_CHECK_RETURN(cudaMemcpy(h_data3, d_data3, MatrixSize, cudaMemcpyDeviceToHost));
 
-    cout << "hi";
-    for(int i = 0; i < VECT_SIZE * VECT_SIZE; i++) {
-        cout << h_data3[i];
-        cout << "\t";
-        if(i % VECT_SIZE - 1 == 0) cout << endl;
-    }
+    // for(int i = 0; i < VECT_SIZE * VECT_SIZE; i++) {
+        // cout << h_data3[i];
+        // cout << "\t";
+        // if(i % VECT_SIZE - 1 == 0) cout << endl;
+    // }
 
     free(h_data1);
     free(h_data2);
