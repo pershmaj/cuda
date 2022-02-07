@@ -15,14 +15,14 @@
 
 using namespace std;
 
-#define VECT_SIZE (1048576u)
+#define VECT_SIZE (32u)
 #define BLOCK_SIZE (16u)
 
-// 32u -> 25 763ns
-// 512u -> 278 967ns
-// 1048576u -> 5369ns
-// 134217728u -> 83ns
-// 1073741824u -> 140ns
+// 32u -> 25763[ns]
+// 512u -> 278631[ns]
+// 1048576u -> 5369[ns]
+// 134217728u -> 5600[ns]
+// 1073741824u -> 4520[ns]
 
 
 __global__ void multiplyMatrixes(int *A, int *B, int *C) {
